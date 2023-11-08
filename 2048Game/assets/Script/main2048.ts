@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Layout, Node, Prefab, size, UITransform, Vec2, input, Input, EventTouch, EventKeyboard, KeyCode, log } from 'cc';
+import { _decorator, Component, instantiate, Layout, Node, Prefab, size, UITransform, Vec2, input, Input, EventTouch, EventKeyboard, KeyCode, log, v2 } from 'cc';
 import { itemNumber } from './itemNumber';
 const { ccclass, property } = _decorator;
 
@@ -62,41 +62,90 @@ export class main2048 extends Component {
         if(keycode == KeyCode.ARROW_UP) {
             console.log("di chuyển lên=====")
             this.Node_GameLayout.children.forEach(element => {
+                    // let number = element.getComponent(itemNumber).lblNumber.string;
                     var x = element.getComponent(itemNumber).position.x;
                     var y = element.getComponent(itemNumber).position.y;     
                         if(element.getComponent(itemNumber).lblNumber.string) {
-                            console.log("vị trí có phần tử: x --y" + x+"--"+y)
-                            this.Node_GameLayout.children.forEach(elementBefore => {
-                                var count = 0;
-                                while(x >=0){
-                                    if(elementBefore.getComponent(itemNumber).position.x == x-1 && elementBefore.getComponent(itemNumber).position.y == y) {
-                                        // while(elementBefore.getComponent(itemNumber).lblNumber.string == ""){
-                                        //     console.log("Vị trí được di chuyển lên là x===y" + elementBefore.getComponent(itemNumber).position.x +"====" + elementBefore.getComponent(itemNumber).position.y)
-                                        //     elementBefore.getComponent(itemNumber).lblNumber.string = element.getComponent(itemNumber).lblNumber.string;
-                                        //     element.getComponent(itemNumber).lblNumber.string = ""
-                                        // }
-                                        console.log("vị trí phía trên nó: x --y" + elementBefore.getComponent(itemNumber).position.x +"====" + elementBefore.getComponent(itemNumber).position.y)
-                                        if(elementBefore.getComponent(itemNumber).lblNumber.string == element.getComponent(itemNumber).lblNumber.string) {
-                                            count = Number(element.getComponent(itemNumber).lblNumber.string)*2
-                                            console.log("1----")
-                                        } 
-                                        if(elementBefore.getComponent(itemNumber).lblNumber.string == "") {
-                                            count = Number(element.getComponent(itemNumber).lblNumber.string)
-                                            console.log("2----")
-                                        }
-                                        // if(elementBefore.getComponent(itemNumber).lblNumber.string != "" && elementBefore.getComponent(itemNumber).lblNumber.string != element.getComponent(itemNumber).lblNumber.string){
-                                            elementBefore.getComponent(itemNumber).lblNumber.string = count.toString();
-                                            element.getComponent(itemNumber).lblNumber.string = ""
-                                            // console.log("3----")
-                                        // }
-                                    }
-                                    x--;
-                                }
-                                // while(element.getComponent(itemNumber).lblNumber.string != elementBefore.getComponent(itemNumber).lblNumber.string && elementBefore.getComponent(itemNumber).lblNumber.string != "") {
-                                    
-                                // }
+                            console.log("vị trí có phần tử: x --y" + x+"--"+y);
+                            var label = element.getComponent(itemNumber).lblNumber.string;
+                            for (let i = x -1; i >=0; i--) {
+                                console.log("kiểm tra vị trí ở trên: x --y" + i+"--"+y);
                                 
-                            })
+                                this.Node_GameLayout.children.forEach(elementBefore => {
+                                    if(elementBefore.getComponent(itemNumber).position.x == i && elementBefore.getComponent(itemNumber).position.y == y){
+                                        if(elementBefore.getComponent(itemNumber).lblNumber.string == ""  ) {
+                                            console.log("--------------------------------------");
+                                            console.log(" element.getComponent(itemNumber).lblNumber.string=>", element.getComponent(itemNumber).lblNumber.string);
+                                            
+                                            console.log("elementBefore=>",elementBefore.getComponent(itemNumber).position);
+                                            
+                                            if(i == 0){
+                                                elementBefore.getComponent(itemNumber).lblNumber.string =  element.getComponent(itemNumber).lblNumber.string;
+                                                element.getComponent(itemNumber).lblNumber.string = ""
+                                            } 
+                                            // elementBefore.getComponent(itemNumber).lblNumber.string = number;
+                                            element.getComponent(itemNumber).lblNumber.string = ""
+                                            console.log("kiểm tra vị trí thỏa mãn if: x --y" + i+"--"+y);
+                                            console.log(" elementBefore.getComponent(itemNumber).lblNumber.string=>", elementBefore.getComponent(itemNumber).lblNumber.string+ "|"+element.getComponent(itemNumber).lblNumber.string );
+                                            // finalElement = elementBefore;
+
+
+                                            var a_number = this.Node_GameLayout.children.find(x=> x.getComponent(itemNumber).position ==  v2(i,y))
+                                            console.log("a_number=>",a_number);
+                                            // elementBefore.getComponent(itemNumber).lblNumber.string = a_number.getComponent(itemNumber).lblNumber.string;
+
+                                        }
+                                    }
+                                });
+
+                                // break;
+                            }
+                                //                             finalElement.getComponent(itemNumber).lblNumber.string = number;
+                                // element.getComponent(itemNumber).lblNumber.string = ""
+                        }
+                            // var elementBefore = element.getComponent(itemNumber);
+                            // for (let i = elementBefore.position.x-1; i >= 0 ; i--) {
+                               
+                            //    }
+                                
+                            // }
+                            // console.log(this.Node_GameLayout.children)
+                            // this.Node_GameLayout.children.forEach(elementBefore => {
+                            //     var count = 0;
+                            //     while(x >0) {
+                            //         if(elementBefore.getComponent(itemNumber).position.x == x-1 && elementBefore.getComponent(itemNumber).position.y == y) {
+                            //             // while(elementBefore.getComponent(itemNumber).lblNumber.string == ""){
+                            //             //     console.log("Vị trí được di chuyển lên là x===y" + elementBefore.getComponent(itemNumber).position.x +"====" + elementBefore.getComponent(itemNumber).position.y)
+                            //             //     elementBefore.getComponent(itemNumber).lblNumber.string = element.getComponent(itemNumber).lblNumber.string;
+                            //             //     element.getComponent(itemNumber).lblNumber.string = ""
+                            //             // }
+                            //             console.log("vị trí phía trên nó: x --y" + elementBefore.getComponent(itemNumber).position.x +"====" + elementBefore.getComponent(itemNumber).position.y)
+                            //             if(elementBefore.getComponent(itemNumber).lblNumber.string == element.getComponent(itemNumber).lblNumber.string) {
+                            //                 count = Number(element.getComponent(itemNumber).lblNumber.string)*2
+                            //                 console.log("1----")
+                            //             }
+                            //             if(elementBefore.getComponent(itemNumber).lblNumber.string == "") {
+                            //                 count = Number(element.getComponent(itemNumber).lblNumber.string)
+                            //                 console.log("2----")
+                            //             }
+                            //             while(elementBefore.getComponent(itemNumber).lblNumber.string != "" && elementBefore.getComponent(itemNumber).lblNumber.string != element.getComponent(itemNumber).lblNumber.string) {
+                                            
+                            //             }
+                            //             // if(elementBefore.getComponent(itemNumber).lblNumber.string != "" && elementBefore.getComponent(itemNumber).lblNumber.string != element.getComponent(itemNumber).lblNumber.string){
+                            //                 elementBefore.getComponent(itemNumber).lblNumber.string = count.toString();
+                            //                 element.getComponent(itemNumber).lblNumber.string = ""
+                            //                 // console.log("3----")
+                            //             // }
+                            //         }
+                            //         x--;
+                            //         console.log("x========" + x)
+                            //     }
+                                    
+                            //     // while(element.getComponent(itemNumber).lblNumber.string != elementBefore.getComponent(itemNumber).lblNumber.string && elementBefore.getComponent(itemNumber).lblNumber.string != "") {
+                                    
+                            //     // }
+                                
+                            // })
                         // this.Node_GameLayout.children.forEach(elementBefore => {
                         //     while(x >=1){
                         //         if(elementBefore.getComponent(itemNumber).position.x == x-1 && elementBefore.getComponent(itemNumber).position.y == y) {
@@ -111,7 +160,6 @@ export class main2048 extends Component {
                         //     }
                             
                         // });
-                        }
             });
             // const currentMatrix = this.matrixMap.map(row => [...row]);
 
@@ -138,79 +186,79 @@ export class main2048 extends Component {
        
     }
 
-    isMatrixChanged(matrix1: number[][], matrix2: number[][]): boolean {
-        const numRows = matrix1.length;
-        const numCols = matrix1[0].length;
+    // isMatrixChanged(matrix1: number[][], matrix2: number[][]): boolean {
+    //     const numRows = matrix1.length;
+    //     const numCols = matrix1[0].length;
     
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                if (matrix1[row][col] !== matrix2[row][col]) {
-                    return true; // Ma trận đã thay đổi
-                }
-            }
-        }
+    //     for (let row = 0; row < numRows; row++) {
+    //         for (let col = 0; col < numCols; col++) {
+    //             if (matrix1[row][col] !== matrix2[row][col]) {
+    //                 return true; // Ma trận đã thay đổi
+    //             }
+    //         }
+    //     }
     
-        return false; // Ma trận không thay đổi
-    }
+    //     return false; // Ma trận không thay đổi
+    // }
 
-    mergeRow(row: number[]): number[] {
-        const nonZeroValues = row.filter(value => value !== 0);
-        const mergedRow = [];
+    // mergeRow(row: number[]): number[] {
+    //     const nonZeroValues = row.filter(value => value !== 0);
+    //     const mergedRow = [];
     
-        for (let i = 0; i < nonZeroValues.length; i++) {
-            if (i < nonZeroValues.length - 1 && nonZeroValues[i] === nonZeroValues[i + 1]) {
-                mergedRow.push(nonZeroValues[i] * 2);
-                nonZeroValues[i + 1] = 0;
-                i++; // Bỏ qua số tiếp theo
-            } else {
-                mergedRow.push(nonZeroValues[i]);
-            }
-        }
+    //     for (let i = 0; i < nonZeroValues.length; i++) {
+    //         if (i < nonZeroValues.length - 1 && nonZeroValues[i] === nonZeroValues[i + 1]) {
+    //             mergedRow.push(nonZeroValues[i] * 2);
+    //             nonZeroValues[i + 1] = 0;
+    //             i++; // Bỏ qua số tiếp theo
+    //         } else {
+    //             mergedRow.push(nonZeroValues[i]);
+    //         }
+    //     }
     
-        while (mergedRow.length < row.length) {
-            mergedRow.push(0);
-        }
+    //     while (mergedRow.length < row.length) {
+    //         mergedRow.push(0);
+    //     }
     
-        return mergedRow;
-    }
+    //     return mergedRow;
+    // }
     
-    moveUp(matrix: number[][]): number[][] {
-        const numRows = matrix.length;
-        const numCols = matrix[0].length;
+    // moveUp(matrix: number[][]): number[][] {
+    //     const numRows = matrix.length;
+    //     const numCols = matrix[0].length;
     
-        for (let col = 0; col < numCols; col++) {
-            const column = [];
-            for (let row = 0; row < numRows; row++) {
-                column.push(matrix[row][col]);
-            }
+    //     for (let col = 0; col < numCols; col++) {
+    //         const column = [];
+    //         for (let row = 0; row < numRows; row++) {
+    //             column.push(matrix[row][col]);
+    //         }
     
-            const mergedColumn = this.mergeRow(column);
+    //         const mergedColumn = this.mergeRow(column);
     
-            for (let row = 0; row < numRows; row++) {
-                matrix[row][col] = mergedColumn[row];
-            }
-        }
+    //         for (let row = 0; row < numRows; row++) {
+    //             matrix[row][col] = mergedColumn[row];
+    //         }
+    //     }
     
-        return matrix;
-    }
+    //     return matrix;
+    // }
 
-    calculateScore(matrix: number[][]): number {
+    // calculateScore(matrix: number[][]): number {
         
-        const numRows = matrix.length;
-        const numCols = matrix[0].length;
+    //     const numRows = matrix.length;
+    //     const numCols = matrix[0].length;
     
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                // Kiểm tra xem có ô số đã bị kết hợp
-                if (matrix[row][col] > 0) {
-                    this.score += matrix[row][col];
-                }
-            }
-        }
+    //     for (let row = 0; row < numRows; row++) {
+    //         for (let col = 0; col < numCols; col++) {
+    //             // Kiểm tra xem có ô số đã bị kết hợp
+    //             if (matrix[row][col] > 0) {
+    //                 this.score += matrix[row][col];
+    //             }
+    //         }
+    //     }
     
-        console.log("điểm hiện tại====" + this.score);
-        return this.score;
-    }
+    //     console.log("điểm hiện tại====" + this.score);
+    //     return this.score;
+    // }
     
     selectMap(event, map){
         const ItemSize = size()
