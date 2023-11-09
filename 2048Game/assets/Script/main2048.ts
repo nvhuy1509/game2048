@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Layout, Node, Prefab, size, UITransform, Vec2, input, Input, EventTouch, EventKeyboard, KeyCode, log, v2 } from 'cc';
+import { _decorator, Component, instantiate, Layout, Node, Prefab, size, UITransform, Vec2, input, Input, EventTouch, EventKeyboard, KeyCode, log, v2, director } from 'cc';
 import { itemNumber } from './itemNumber';
 const { ccclass, property } = _decorator;
 
@@ -40,6 +40,11 @@ export class main2048 extends Component {
         console.log(event.getUILocation());  // location on UI space
     }
 
+    onRestartGame() {
+        director.loadScene("game");
+    }
+
+
     onKeyUp (event: EventKeyboard) {
         switch(event.keyCode) {
             case KeyCode.ARROW_UP:
@@ -68,41 +73,78 @@ export class main2048 extends Component {
                         if(element.getComponent(itemNumber).lblNumber.string) {
                             console.log("vị trí có phần tử: x --y" + x+"--"+y);
                             var label = element.getComponent(itemNumber).lblNumber.string;
+                            var checked = false;
                             for (let i = x -1; i >=0; i--) {
                                 console.log("kiểm tra vị trí ở trên: x --y" + i+"--"+y);
                                 
                                 this.Node_GameLayout.children.forEach(elementBefore => {
                                     if(elementBefore.getComponent(itemNumber).position.x == i && elementBefore.getComponent(itemNumber).position.y == y){
                                         if(elementBefore.getComponent(itemNumber).lblNumber.string == ""  ) {
-                                            console.log("--------------------------------------");
-                                            console.log(" element.getComponent(itemNumber).lblNumber.string=>", element.getComponent(itemNumber).lblNumber.string);
-                                            
                                             console.log("elementBefore=>",elementBefore.getComponent(itemNumber).position);
                                             
-                                            if(i == 0){
-                                                elementBefore.getComponent(itemNumber).lblNumber.string =  element.getComponent(itemNumber).lblNumber.string;
-                                                element.getComponent(itemNumber).lblNumber.string = ""
-                                            } 
-                                            // elementBefore.getComponent(itemNumber).lblNumber.string = number;
-                                            element.getComponent(itemNumber).lblNumber.string = ""
+                                            elementBefore.getComponent(itemNumber).lblNumber.string =  label;
+                                            // element.getComponent(itemNumber).lblNumber.string = ""
                                             console.log("kiểm tra vị trí thỏa mãn if: x --y" + i+"--"+y);
-                                            console.log(" elementBefore.getComponent(itemNumber).lblNumber.string=>", elementBefore.getComponent(itemNumber).lblNumber.string+ "|"+element.getComponent(itemNumber).lblNumber.string );
-                                            // finalElement = elementBefore;
+                                            checked = true;
+                                        }
+                                        else{
+                                            if(elementBefore.getComponent(itemNumber).lblNumber.string == label) {
+                                                label = (Number(label)*2).toString();
+                                                console.log("nếu 2 giá trị liền nhau = nhau ===" + label);
+                                                elementBefore.getComponent(itemNumber).lblNumber.string =  label;
+                                                this.Node_GameLayout.children.forEach(elementCheck => {
+                                                    if(elementCheck.getComponent(itemNumber).position.x == i-1 && elementCheck.getComponent(itemNumber).position.y == y){
+                                                        if(elementCheck.getComponent(itemNumber).lblNumber.string) {
+                                                            checked = false
+                                                            element.getComponent(itemNumber).lblNumber.string =  label;
+                                                            elementBefore.getComponent(itemNumber).lblNumber.string =  label;
+                                                            console.log("when checked == false elementBefore ===", elementBefore.getComponent(itemNumber).position );
+                                                            console.log("when checked == false elementCheck ===", elementCheck.getComponent(itemNumber).position );
+                                                            
+                                                        }   else{
+                                                            checked = true
+                                                        } 
+                                                    } 
+                                                })
 
-
-                                            var a_number = this.Node_GameLayout.children.find(x=> x.getComponent(itemNumber).position ==  v2(i,y))
-                                            console.log("a_number=>",a_number);
-                                            // elementBefore.getComponent(itemNumber).lblNumber.string = a_number.getComponent(itemNumber).lblNumber.string;
-
+                                                
+                                            } else {
+                                                checked = false
+                                                console.log("2 giá trị khác nhau---elementBefore===>" + elementBefore.getComponent(itemNumber).lblNumber.string + "----label---" + label)
+                                            }
                                         }
                                     }
+                                    if(checked == true) {
+                                        if(elementBefore.getComponent(itemNumber).position.x == i+1 && elementBefore.getComponent(itemNumber).position.y == y){
+                                            if(elementBefore.getComponent(itemNumber).lblNumber.string != "" ) {
+                                                // if( elementBefore.getComponent(itemNumber).lblNumber.string == label ) {
+                                                    console.log("elementBefore check vị trí=>",elementBefore.getComponent(itemNumber).position);
+                                                
+                                                    elementBefore.getComponent(itemNumber).lblNumber.string =  "";
+                                                // }
+                                                
+                                                // element.getComponent(itemNumber).lblNumber.string = ""
+                                            } else {
+                                                if(elementBefore.getComponent(itemNumber).lblNumber.string == element.getComponent(itemNumber).lblNumber.string) {
+                                                    elementBefore.getComponent(itemNumber).lblNumber.string =  (Number(label)*2).toString();
+                                                } else {
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
                                 });
-
-                                // break;
+                                if(checked == false) 
+                                {
+                                     break;
+                                }
+                               
                             }
                                 //                             finalElement.getComponent(itemNumber).lblNumber.string = number;
                                 // element.getComponent(itemNumber).lblNumber.string = ""
                         }
+                       
                             // var elementBefore = element.getComponent(itemNumber);
                             // for (let i = elementBefore.position.x-1; i >= 0 ; i--) {
                                
@@ -161,6 +203,7 @@ export class main2048 extends Component {
                             
                         // });
             });
+            this.randomNumber(2);
             // const currentMatrix = this.matrixMap.map(row => [...row]);
 
             // console.log("ma trận trước khi thay đổi==")
