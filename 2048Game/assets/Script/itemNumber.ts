@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Vec2 } from 'cc';
+import { _decorator, Component, Label, Node, tween, Vec2, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('itemNumber')
@@ -17,6 +17,10 @@ export class itemNumber extends Component {
         this.position.y = y;
 
         this.lblNumber.string = data;
+        tween()
+        .target(this.lblNumber.node)
+        .to(0.3, {  scale: new Vec3(1.3, 1.3, 1) }).delay(0.1).to(1.0, {  scale: new Vec3(1, 1, 1) })
+        .start();
     }
 
     update(deltaTime: number) {
