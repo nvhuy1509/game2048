@@ -48,10 +48,11 @@ export class main2048 extends Component {
     onKeyUp (event: EventKeyboard) {
         switch(event.keyCode) {
             case KeyCode.ARROW_UP:
-                this.moveUp();
+                // this.moveUp();
                 break;
             case KeyCode.ARROW_DOWN:
                 console.log('Vuốt xuống dưới');
+                this.moveDown();
                 break;
             case KeyCode.ARROW_LEFT:
                 console.log('Vuốt sang trái');
@@ -199,10 +200,17 @@ export class main2048 extends Component {
                                                 if(elementCheck.getComponent(itemNumber).lblNumber.string) { // nếu có giá trị ở trên thì dừng lại không di chuyển nữa
                                                     checked = false
                                                     elementBefore.getComponent(itemNumber).lblNumber.string =  label;
+                                                    if(Number(element.getComponent(itemNumber).position.x) - Number(elementBefore.getComponent(itemNumber).position.x) > 1) {
+                                                        this.Node_GameLayout.children.forEach(elementDel => { // nếu giá trị ban đầu cách xa giá trị before thì sẽ xóa 1 lần ở ngay dưới before đi bởi vì checked = false nên không dùng được đoạn xóa phần tử ở dưới
+                                                            if(elementDel.getComponent(itemNumber).position.x == elementBefore.getComponent(itemNumber).position.x+1 && elementDel.getComponent(itemNumber).position.y == element.getComponent(itemNumber).position.y){
+                                                                console.log("when checked == false elementDel ===", elementDel.getComponent(itemNumber).position );
+                                                                elementDel.getComponent(itemNumber).lblNumber.string = ""
+                                                            }
+                                                        })
+                                                    }
                                                     console.log("when checked == false elementBefore ===", elementBefore.getComponent(itemNumber).position );
                                                     console.log("when checked == false elementCheck ===", elementCheck.getComponent(itemNumber).position );
                                                     console.log("when checked == false element ===", element.getComponent(itemNumber).position );
-                                                    
                                                 }   else{
                                                     checked = true
                                                 } 
@@ -234,9 +242,6 @@ export class main2048 extends Component {
                         });
                         if(checked == false) 
                         {
-                            // if(element.getComponent(itemNumber).position.x == i-1 && element.getComponent(itemNumber).position.y == y){
-                            //     element.getComponent(itemNumber).lblNumber.string =  "";
-                            // }
                                 break;
                         }
                         
@@ -245,6 +250,90 @@ export class main2048 extends Component {
         });
         this.randomNumber(2);
     }
+
+    moveDown(){
+            this.Node_GameLayout.children.forEach(element => {
+                // let number = element.getComponent(itemNumber).lblNumber.string;
+                var x = element.getComponent(itemNumber).position.x;
+                var y = element.getComponent(itemNumber).position.y;     
+                    if(element.getComponent(itemNumber).lblNumber.string) { // kiểm tra vị trí phần tử có giá trị số
+                        console.log("vị trí có phần tử: x --y" + x+"--"+y);
+                        var label = element.getComponent(itemNumber).lblNumber.string; 
+                        var checked = false; // khai báo biến để kiểm tra giá trị có di chuyển tiếp được hay không
+                        for (let i = x +1; i <= this.typeMap; i++) {
+                            console.log("kiểm tra vị trí ở dưới: x --y" + i+"--"+y);
+                            
+                            this.Node_GameLayout.children.forEach(elementBefore => { // foreach lấy ra các vị trí thuộc cột chứa phần tử có giá trị,
+                                if(elementBefore.getComponent(itemNumber).position.x == i && elementBefore.getComponent(itemNumber).position.y == y){  //lấy ra phần tử dưới phần tử ban đầu
+                                    if(elementBefore.getComponent(itemNumber).lblNumber.string == ""  ) { // nếu phần tử phía dưới trống. gán giá trị của ô này bằng với label
+                                        console.log("elementBefore=>",elementBefore.getComponent(itemNumber).position);
+                                        
+                                        elementBefore.getComponent(itemNumber).lblNumber.string =  label; 
+                                        console.log("kiểm tra vị trí thỏa mãn if: x --y" + i+"--"+y);
+                                        checked = true;
+                                    }
+                                    else{
+                                        // if(elementBefore.getComponent(itemNumber).lblNumber.string == label) { // nếu phần tử phía dưới có giá trị bằng vị trí ban đầu
+                                        //     label = (Number(label)*2).toString();
+                                        //     console.log("nếu 2 giá trị liền nhau = nhau ===" + label + "i là ===" + i);
+                                        //     elementBefore.getComponent(itemNumber).lblNumber.string =  label; 
+                                        //     this.Node_GameLayout.children.forEach(elementCheck => {
+                                        //         if(elementCheck.getComponent(itemNumber).position.x == i+1 && elementCheck.getComponent(itemNumber).position.y == y){ // kiểm tra vị trí ở dưới element before xem có giá trị chưa
+                                        //             console.log("when checked == false elementCheck ===", elementCheck.getComponent(itemNumber).position );
+                                        //             if(elementCheck.getComponent(itemNumber).lblNumber.string) { // nếu có giá trị ở dưới thì dừng lại không di chuyển nữa
+                                        //                 checked = false
+                                        //                 elementBefore.getComponent(itemNumber).lblNumber.string =  label;
+                                        //                 // if(Number(element.getComponent(itemNumber).position.x) - Number(elementBefore.getComponent(itemNumber).position.x) > 1) {
+                                        //                 //     this.Node_GameLayout.children.forEach(elementDel => { // nếu giá trị ban đầu cách xa giá trị before thì sẽ xóa 1 lần ở ngay dưới before đi bởi vì checked = false nên không dùng được đoạn xóa phần tử ở dưới
+                                        //                 //         if(elementDel.getComponent(itemNumber).position.x == elementBefore.getComponent(itemNumber).position.x+1 && elementDel.getComponent(itemNumber).position.y == element.getComponent(itemNumber).position.y){
+                                        //                 //             console.log("when checked == false elementDel ===", elementDel.getComponent(itemNumber).position );
+                                        //                 //             elementDel.getComponent(itemNumber).lblNumber.string = ""
+                                        //                 //         }
+                                        //                 //     })
+                                        //                 // }
+                                        //                 console.log("when checked == false elementBefore ===", elementBefore.getComponent(itemNumber).position );
+                                        //                 console.log("when checked == false elementCheck ===", elementCheck.getComponent(itemNumber).position );
+                                        //                 console.log("when checked == false element ===", element.getComponent(itemNumber).position );
+                                        //             }   else{
+                                        //                 checked = true
+                                        //             } 
+                                        //         } 
+                                        //     })
+                                        //     element.getComponent(itemNumber).lblNumber.string =  ""; // sau khi di chuyển đến vị trí mới đặt vị trí ban đầu = 0
+                                            
+                                        // } else { // nếu giá trị phía trên có giá trị khác thì dừng lại break vòng for
+                                        //     checked = false
+                                        // }
+                                    }
+                                }
+                                if(checked == true) {// nếu di chuyển tiếp được 
+                                    if(elementBefore.getComponent(itemNumber).position.x == i-1 && elementBefore.getComponent(itemNumber).position.y == y){// lấy ra vị trí vừa di chuyển của elementbefore 
+                                        console.log("kiểm tra vị trí nếu di chuyển được=>",elementBefore.getComponent(itemNumber).position);
+                                        if(elementBefore.getComponent(itemNumber).lblNumber.string != "" ) { // nếu có giá trị thì đặt = 0 
+                                                // ví dụ đoạn mã ở trên sẽ lấy ra giá trị elementBefore để di chuyển lên từng ô 1. khi vừa di chuyển thì xóa đi giá trị ở vị trí cũ
+                                                console.log("elementBefore check vị trí=>",elementBefore.getComponent(itemNumber).position);
+                                                elementBefore.getComponent(itemNumber).lblNumber.string =  "";
+                                        } else {
+                                            if(elementBefore.getComponent(itemNumber).lblNumber.string == element.getComponent(itemNumber).lblNumber.string) { // nếu có 2 giá trị bằng nhau thì x2 lên merge vào 1 ô
+                                                elementBefore.getComponent(itemNumber).lblNumber.string =  (Number(label)*2).toString();
+                                            } else {
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            });
+                            if(checked == false) 
+                            {
+                                    break;
+                            }
+                            
+                        }
+                    }
+            });
+            // this.randomNumber(2);
+        }
 
     selectMap(event, map){
         const ItemSize = size()
