@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, sys } from 'cc';
+import { _decorator, Component, director, Label, Node, sys } from 'cc';
 import { Grid } from './grid/grid';
 import { InputManager } from './input/input-manager';
 import { MoveDirection } from './constant';
@@ -30,24 +30,22 @@ export class GameManager extends Component {
     @property(Node)
     public gamevictoryRoot: Node = null;
 
+    @property(Node)
+    public selectmapRoot: Node = null;
+
     private _skipMergedCheck = false;
 
     private _beforeScore: number = 0;
 
     start () {
+        this.selectmapRoot.active = true;
         this.init();
     }
 
     private init () {
         this.gameoverRoot.active = false;
         this.gamevictoryRoot.active = false;
-        this.grid.newGrid();
-        this.inputManager.moveEvent.addEventListener(this.onMove, this);
-        this.grid.cellBeforeMergeEvent.addEventListener(this.onCellBeforeMerge, this);
-        this.grid.cellMergedEvent.addEventListener(this.onCellMerged, this);
-        this.grid.filledEvent.addEventListener(this.onGridFilled, this);
-        const best = Utils.defaultValue(sys.localStorage.getItem("best-score"), "0");
-        this.bestLable.string = best;
+      
     }
 
     private onMove (dir: MoveDirection) {
@@ -83,15 +81,32 @@ export class GameManager extends Component {
 
     public newGame () {
         if (!this.inputManager.enabled) this.inputManager.enabled = true;
+        director.loadScene("scene");
         this.grid.newGrid();
         this.scoreLabel.string = "0";
         this._skipMergedCheck = false;
     }
 
     public restart () {
-        this.gameoverRoot.active = false;
-        this.gamevictoryRoot.active = false;
-        this.newGame();
+        director.loadScene("scene");
+        // this.selectmapRoot.active = true;
+        // this.gameoverRoot.active = false;
+        // this.gamevictoryRoot.active = false;
+        // this.newGame();
+        
+    }
+
+    public selectMap(event, map){
+        this.grid._size = map;
+        this.selectmapRoot.active = false;
+        console.log("-this.grid._size------", this.grid._size)
+        this.grid.newGrid();
+        this.inputManager.moveEvent.addEventListener(this.onMove, this);
+        this.grid.cellBeforeMergeEvent.addEventListener(this.onCellBeforeMerge, this);
+        this.grid.cellMergedEvent.addEventListener(this.onCellMerged, this);
+        this.grid.filledEvent.addEventListener(this.onGridFilled, this);
+        const best = Utils.defaultValue(sys.localStorage.getItem("best-score"), "0");
+        this.bestLable.string = best;
     }
 
     public continueGame () {

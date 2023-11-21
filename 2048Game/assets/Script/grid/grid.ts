@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Layout, math, Node, Prefab, size } from 'cc';
+import { _decorator, Component, instantiate, Layout, math, Node, Prefab, size, tween, UITransform, Vec2 } from 'cc';
 import { Square } from '../square/square';
 import { Cell, CellData, MoveDirection, NumberConfig } from '../constant';
 import { Log } from '../framework/log/log';
@@ -38,7 +38,7 @@ export class Grid extends Component {
     //row col
     private _grid: boolean[][] = [];
 
-    private _size = 4;
+    public _size = 0;
 
     public cellBeforeMergeEvent: GenericEvent<any> = new GenericEvent();
 
@@ -50,30 +50,38 @@ export class Grid extends Component {
 
     private _toSnapshotDone = false;
 
-    public get snapshotData () {
+    public get snapshotData() {
         return this._snapshotData;
     }
 
-    public get isMoving () {
+    public get isMoving() {
         const movingSquare = this._cellList.find(cell => cell.overSquare && cell.overSquare.isMoving);
         return !!movingSquare;
     }
 
-    start () {
-        const layout = this.node.getComponent(Layout);
-        layout.enabled = false;
+    start() {
+       
     }
 
-    private resetCellData () {
+    private resetCellData() {
+
         this._cellList = this.node.children.map(n => {
             const square = n.getComponent(Square);
+
+            // console.log('%c%s', 'color: #d90000', "square=>",square.name,square);
             return {
                 square: square
             }
         });
+
+
+
+
+        console.log('%c%s', 'color: #0088cc', "_cellList=>",this._cellList.length);
+
     }
 
-    private clearOverSquare () {
+    private clearOverSquare() {
         this._cellList.forEach(cell => {
             if (cell.overSquare) {
                 PoolManager.instance.putNode(cell.overSquare.node, this.squarePrefab);
@@ -82,16 +90,32 @@ export class Grid extends Component {
         });
     }
 
-    public newGrid () {
-        this._snapshotData = null;
-        this._toSnapshotDone = false;
-        this.clearOverSquare();
-        this.resetCellData();
-        this.initGridData();
-        this.generateSquares(2);
+    public newGrid() {
+        for (let i = 0; i < (this._size * this._size); i++) {
+            
+            var a = instantiate(this.squarePrefab);
+            a.parent = this.node;
+            a.getComponent(UITransform).setContentSize(this.getSize(), this.getSize());
+            
+        }
+        const layout = this.node.getComponent(Layout);
+        layout.enabled = true;
+        
+        tween(this.node).delay(0.1).call(()=>{
+            layout.enabled = false;
+            this._snapshotData = null;
+            this._toSnapshotDone = false;
+            this.clearOverSquare();
+            this.resetCellData();
+            this.initGridData();
+            this.generateSquares(2);
+        }).start();
+      
+
+       
     }
 
-    public moveCell (dir: MoveDirection) {
+    public moveCell(dir: MoveDirection) {
         if (this.isMoving) return;
         const moveInfoList: MoveInfo[] = [];
         if (dir === MoveDirection.RIGHT) {
@@ -220,7 +244,7 @@ export class Grid extends Component {
 
     }
 
-    public toSnapshot () {
+    public toSnapshot() {
         if (this._snapshotData && !this._toSnapshotDone) {
             this.clearOverSquare();
             const grid = this._snapshotData.grid;
@@ -230,10 +254,14 @@ export class Grid extends Component {
                     const cell = row[j];
                     this._grid[i][j] = cell.flag;
                     if (cell.flag) {
+
+                        console.log('%c%s', 'color: #00bf00', "toSnapshot");
                         const cellData = this._cellList[i * this._size + j];
                         const squareNode = PoolManager.instance.getNode(this.squarePrefab, this.node);
                         const square = squareNode.getComponent(Square);
+                        
                         squareNode.setWorldPosition(cellData.square.node.worldPosition);
+                        
                         cellData.overSquare = square;
                         const config = this.getLevelConfig(cell.value);
                         square.show(cell.value, config.bgColor, config.fontColor);
@@ -246,7 +274,7 @@ export class Grid extends Component {
         }
     }
 
-    private snapshot () {
+    private snapshot() {
         if (!this._snapshotData) {
             this._snapshotData = { grid: [] }
         }
@@ -271,7 +299,7 @@ export class Grid extends Component {
         }
     }
 
-    private doMoveCell (moveInfoList: MoveInfo[]) {
+    private doMoveCell(moveInfoList: MoveInfo[]) {
         let moveCount = moveInfoList.length;
         moveInfoList.forEach(moveInfo => {
             const toCellData = this._cellList[moveInfo.to.row * this._size + moveInfo.to.col];
@@ -308,7 +336,7 @@ export class Grid extends Component {
 
     }
 
-    private initGridData () {
+    private initGridData() {
         this._grid.length = 0;
         for (let i = 0; i < this._size; i++) {
             const row = [];
@@ -317,13 +345,15 @@ export class Grid extends Component {
                 row.push(false);
             }
         }
+
+        console.log('%c%s', 'color: #ff0000', " this._grid.length=>", this._grid.length);
     }
 
-    private checkFilled () {
+    private checkFilled() {
         this.isFilled() && this.filledEvent.emit(true);
     }
 
-    private isFilled () {
+    private isFilled() {
         if (!this.hasEmptyCells()) {
             for (let i = 0; i < this._size; i++) {
                 for (let j = 0; j < this._size; j++) {
@@ -351,24 +381,34 @@ export class Grid extends Component {
         return false;
     }
 
-    private generateSquares (count: number) {
+    private generateSquares(count: number) {
         const emptyCells = this.findEmptyCells();
         const cells: Cell[] = [];
         let total = 0;
+
+        console.log('%c%s', 'color: #fc00b0', "emptyCells=>", emptyCells);
+
+        // console.log('%c%s', 'color: #00a3cc',"total=>",total );
+
         while (emptyCells.length && total < count) {
             const index = math.randomRangeInt(0, emptyCells.length);
             const cell = emptyCells.splice(index, 1)[0];
             cells.push(cell!);
             total++;
         }
+
+        console.log('%c%s', 'color: #ff0000', "cells=>", cells);
         const config = this.getLevelConfig(2);
         cells.forEach(cell => {
+
+            console.log('%c%s', 'color: #e50000', "cell=>", cell);
             const cellData = this._cellList[cell.row * this._size + cell.col];
             //create new square node
             const squareNode = PoolManager.instance.getNode(this.squarePrefab, this.node);
             const square = squareNode.getComponent(Square);
             squareNode.setWorldPosition(cellData.square.node.worldPosition);
             cellData.overSquare = square;
+            squareNode.getComponent(UITransform).setContentSize(this.getSize(), this.getSize());
             this.updateCellState(cell, true);
 
             square.show(2, config.bgColor, config.fontColor);
@@ -376,11 +416,11 @@ export class Grid extends Component {
         });
     }
 
-    private updateCellState (cell: Cell, flag: boolean) {
+    private updateCellState(cell: Cell, flag: boolean) {
         this._grid[cell.row][cell.col] = flag;
     }
 
-    private findEmptyCells () {
+    private findEmptyCells() {
         const res: Cell[] = [];
         for (let i = 0; i < this._grid.length; i++) {
             const row = this._grid[i];
@@ -397,7 +437,7 @@ export class Grid extends Component {
         return res;
     }
 
-    private hasEmptyCells () {
+    private hasEmptyCells() {
         for (let i = 0; i < this._grid.length; i++) {
             const row = this._grid[i];
             for (let j = 0; j < row.length; j++) {
@@ -410,9 +450,30 @@ export class Grid extends Component {
         return false;
     }
 
-    private getLevelConfig (level: number) {
+    private getLevelConfig(level: number) {
         const levelConfig = NumberConfig[String(level)];
         return levelConfig || NumberConfig["2048"];
+    }
+
+    getSize(){
+        var widthLayout = 0;
+        if(this._size == 3) {
+            widthLayout = this.node.getComponent(UITransform).contentSize.width - (13*(this._size - 1));
+        }
+        if(this._size == 4) {
+                widthLayout = this.node.getComponent(UITransform).contentSize.width - (10*(this._size - 1));
+        }
+        if(this._size == 5) {
+                widthLayout = this.node.getComponent(UITransform).contentSize.width - (9*(this._size - 1));
+        }
+        if(this._size == 6) {
+                widthLayout = this.node.getComponent(UITransform).contentSize.width - (8*(this._size - 1));
+        }
+        if(this._size == 8) {
+                widthLayout = this.node.getComponent(UITransform).contentSize.width - (7*(this._size - 1));
+        }
+      
+        return widthLayout/this._size;
     }
 
 }
