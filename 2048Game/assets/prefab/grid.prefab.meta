@@ -2,12 +2,12 @@
   "ver": "1.1.45",
   "importer": "prefab",
   "imported": true,
-  "uuid": "650f0c1f-cc63-4b11-aa36-dc817b590f7b",
+  "uuid": "02e9967d-febb-40d2-ba91-e6456129a185",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "teamBg"
+    "syncNodeName": "grid"
   }
 }
