@@ -1,0 +1,55 @@
+
+Breaking.png
+size: 2001,665
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 1286, 2
+  size: 233, 234
+  orig: 233, 234
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 1703, 102
+  size: 266, 245
+  orig: 266, 245
+  offset: 0, 0
+  index: -1
+3
+  rotate: true
+  xy: 1703, 349
+  size: 314, 296
+  orig: 314, 296
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 1286, 238
+  size: 415, 425
+  orig: 415, 425
+  offset: 0, 0
+  index: -1
+5
+  rotate: true
+  xy: 692, 67
+  size: 596, 592
+  orig: 596, 592
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 2, 5
+  size: 688, 658
+  orig: 688, 658
+  offset: 0, 0
+  index: -1
+Sun
+  rotate: false
+  xy: 1521, 118
+  size: 120, 118
+  orig: 120, 118
+  offset: 0, 0
+  index: -1

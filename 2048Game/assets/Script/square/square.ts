@@ -1,4 +1,5 @@
 import { _decorator, Animation, Color, Component, Label, Node, Sprite, Tween, Vec2, Vec3 } from 'cc';
+import { GameManager } from '../game-manager';
 const { ccclass, property } = _decorator;
 
 const HIDE_COLOR = new Color(255, 255, 255, 0);
@@ -37,8 +38,9 @@ export class Square extends Component {
         this._numberNode.active = false;
     }
 
-    public show (val: number, spriteColor: Color, fontColor: Color = Color.WHITE) {
+    public show (val: number, spriteColor: Color, fontColor: Color = Color.WHITE, numBg: number) {
         this._sprite.color = spriteColor;
+        this._sprite.spriteFrame = GameManager.Intance.listBgNumber[numBg];
         this._numberLabel.string = String(val);
         this._numberLabel.color = fontColor;
         if (!this._numberNode.active) this._numberNode.active = true;

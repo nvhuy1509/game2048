@@ -1,13 +1,19 @@
-import { _decorator, Component, director, Label, Node, sys } from 'cc';
+import { _decorator, Button, Component, Label, Node, Sprite, SpriteFrame, sys } from 'cc';
 import { Grid } from './grid/grid';
 import { InputManager } from './input/input-manager';
 import { MoveDirection } from './constant';
 import { Log } from './framework/log/log';
 import { Utils } from './framework/utils/utils';
+import { Connection } from './connection/socket/Connection';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
 export class GameManager extends Component {
+
+    userId = null
+    userName = null
+    userAvt = null
+
 
     @property(Grid)
     public grid: Grid = null;
@@ -22,30 +28,70 @@ export class GameManager extends Component {
     public bestLable: Label = null;
 
     @property(Node)
+    public fireworkLeft: Node = null;
+
+    @property(Node)
+    public fireworkRight: Node = null;
+
+
+    @property(Node)
     public gameoverRoot: Node = null;
+
+    @property(Node)
+    public gameruleRoot: Node = null;
+
+    @property(Node)
+    public gameBxhRoot: Node = null;
+    
+    @property(Node)
+    public gameoverHighScoreRoot: Node = null;
+
+    @property(Node)
+    public buttonBackPre: Node = null;
 
     @property(Label)
     public gameoverScoreLabel: Label = null;
 
-    @property(Node)
-    public gamevictoryRoot: Node = null;
+    @property(Label)
+    public gameoverHighScoreLabel: Label = null;
 
     @property(Node)
-    public selectmapRoot: Node = null;
+    public gamevictoryRoot: Node = null;
 
     private _skipMergedCheck = false;
 
     private _beforeScore: number = 0;
 
+    @property(SpriteFrame)
+    public listBgNumber: SpriteFrame[] = []
+
+    static Intance : GameManager; 
+
+    protected onLoad(): void {
+        GameManager.Intance = this;
+        // let bkg = this.node.getChildByName("bkg");
+        // let frameSize = screen.windowSize
+        // let scaleX = view.getScaleX()
+        // let scaleY = view.getScaleY()
+        // let fullWidth = frameSize.width / scaleX;
+        // let fullHeight = frameSize.height / scaleY;
+        // let size = new Size(fullWidth, fullHeight)
+        // bkg.getComponent(UITransform).setContentSize(size);
+    }
     start () {
-        this.selectmapRoot.active = true;
         this.init();
     }
 
     private init () {
         this.gameoverRoot.active = false;
         this.gamevictoryRoot.active = false;
-      
+        this.grid.newGrid();
+        this.inputManager.moveEvent.addEventListener(this.onMove, this);
+        this.grid.cellBeforeMergeEvent.addEventListener(this.onCellBeforeMerge, this);
+        this.grid.cellMergedEvent.addEventListener(this.onCellMerged, this);
+        this.grid.filledEvent.addEventListener(this.onGridFilled, this);
+        const best = Utils.defaultValue(sys.localStorage.getItem("best-score"), "0");
+        this.bestLable.string = best;
     }
 
     private onMove (dir: MoveDirection) {
@@ -75,50 +121,74 @@ export class GameManager extends Component {
     public onGridFilled (filled: boolean) {
         if (this.inputManager.enabled) this.inputManager.enabled = false;
         this.gameoverScoreLabel.string = this.scoreLabel.string;
-        this.gameoverRoot.active = true;
+        if(Number(this.scoreLabel.string) ==  Number(this.bestLable.string)) {
+            this.gameoverHighScoreLabel.string = this.scoreLabel.string;
+            this.gameoverHighScoreRoot.active = true;
+            console.log("die nhưng điểm caooooooooooooooooo=========")
+        } else {
+            this.gameoverScoreLabel.string = this.scoreLabel.string;
+            this.gameoverRoot.active = true;
+            console.log("die nhưng điểm thấp=========")
+        }
         Log.info(GameManager.name, "game over!");
     }
 
     public newGame () {
         if (!this.inputManager.enabled) this.inputManager.enabled = true;
-        director.loadScene("scene");
+        this.grid.displayPopup = false;
+        this.buttonBackPre.getComponent(Sprite).grayscale = false;
+        this.buttonBackPre.getComponent(Button).interactable = true;
         this.grid.newGrid();
         this.scoreLabel.string = "0";
         this._skipMergedCheck = false;
     }
 
     public restart () {
-        director.loadScene("scene");
-        // this.selectmapRoot.active = true;
-        // this.gameoverRoot.active = false;
-        // this.gamevictoryRoot.active = false;
-        // this.newGame();
-        
-    }
-
-    public selectMap(event, map){
-        this.grid._size = map;
-        this.selectmapRoot.active = false;
-        console.log("-this.grid._size------", this.grid._size)
-        this.grid.newGrid();
-        this.inputManager.moveEvent.addEventListener(this.onMove, this);
-        this.grid.cellBeforeMergeEvent.addEventListener(this.onCellBeforeMerge, this);
-        this.grid.cellMergedEvent.addEventListener(this.onCellMerged, this);
-        this.grid.filledEvent.addEventListener(this.onGridFilled, this);
-        const best = Utils.defaultValue(sys.localStorage.getItem("best-score"), "0");
-        this.bestLable.string = best;
+        this.gameoverRoot.active = false;
+        this.gamevictoryRoot.active = false;
+        this.gameoverHighScoreRoot.active = false;
+        this.newGame();
     }
 
     public continueGame () {
         if (!this.inputManager.enabled) this.inputManager.enabled = true;
         this.gamevictoryRoot.active = false;
+        this.grid.displayPopup = false;
         this._skipMergedCheck = true;
     }
 
     public toSnapshot () {
         if (this.grid.snapshotData) {
             this.grid.toSnapshot();
+            this.buttonBackPre.getComponent(Sprite).grayscale = true;
+            this.buttonBackPre.getComponent(Button).interactable = false;
             this.scoreLabel.string = String(this._beforeScore);
+        }
+    }
+
+    private onChangePopup(event, data) {
+        console.log("data-----", data)
+        switch (data) {
+            case "1": // game victory
+                this.gamevictoryRoot.active = !this.gameBxhRoot.active; 
+                break;
+            case "2": // game over
+                this.gameoverRoot.active = !this.gameoverRoot.active; 
+                break;
+            case "3": // game over high score
+                this.gameoverHighScoreRoot.active = !this.gameoverHighScoreRoot.active; 
+                break;
+            case "4": // game rule
+                this.gameruleRoot.active = !this.gameruleRoot.active; 
+                break;
+            case "5": // game bxh
+                if(this.gameBxhRoot.active == false) {
+                    Connection.Instance.SEND({event: "game2048_top_players", data : 4} )
+                }
+                this.gameBxhRoot.active = !this.gameBxhRoot.active; 
+                
+                break;
+            
         }
     }
 

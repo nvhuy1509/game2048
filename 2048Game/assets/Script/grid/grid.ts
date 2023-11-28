@@ -1,9 +1,10 @@
-import { _decorator, Component, instantiate, Layout, math, Node, Prefab, size, tween, UITransform, Vec2 } from 'cc';
+import { _decorator, Color, Component, instantiate, Layout, math, Node, Prefab, size, Skeleton, sp, tween, UITransform, Vec3 } from 'cc';
 import { Square } from '../square/square';
 import { Cell, CellData, MoveDirection, NumberConfig } from '../constant';
 import { Log } from '../framework/log/log';
 import { GenericEvent } from '../framework/event/generic-event';
 import { PoolManager } from '../framework/pool/pool-manager';
+import { GameManager } from '../game-manager';
 const { ccclass, property } = _decorator;
 
 type MoveInfo = {
@@ -38,7 +39,7 @@ export class Grid extends Component {
     //row col
     private _grid: boolean[][] = [];
 
-    public _size = 0;
+    private _size = 4;
 
     public cellBeforeMergeEvent: GenericEvent<any> = new GenericEvent();
 
@@ -50,38 +51,31 @@ export class Grid extends Component {
 
     private _toSnapshotDone = false;
 
-    public get snapshotData() {
+    displayPopup = false;
+    public get snapshotData () {
         return this._snapshotData;
     }
 
-    public get isMoving() {
+    public get isMoving () {
         const movingSquare = this._cellList.find(cell => cell.overSquare && cell.overSquare.isMoving);
         return !!movingSquare;
     }
 
-    start() {
-       
+    start () {
+        const layout = this.node.getComponent(Layout);
+        layout.enabled = false;
     }
 
-    private resetCellData() {
-
+    private resetCellData () {
         this._cellList = this.node.children.map(n => {
             const square = n.getComponent(Square);
-
-            // console.log('%c%s', 'color: #d90000', "square=>",square.name,square);
             return {
                 square: square
             }
         });
-
-
-
-
-        console.log('%c%s', 'color: #0088cc', "_cellList=>",this._cellList.length);
-
     }
 
-    private clearOverSquare() {
+    private clearOverSquare () {
         this._cellList.forEach(cell => {
             if (cell.overSquare) {
                 PoolManager.instance.putNode(cell.overSquare.node, this.squarePrefab);
@@ -90,32 +84,17 @@ export class Grid extends Component {
         });
     }
 
-    public newGrid() {
-        for (let i = 0; i < (this._size * this._size); i++) {
-            
-            var a = instantiate(this.squarePrefab);
-            a.parent = this.node;
-            a.getComponent(UITransform).setContentSize(this.getSize(), this.getSize());
-            
-        }
-        const layout = this.node.getComponent(Layout);
-        layout.enabled = true;
-        
-        tween(this.node).delay(0.1).call(()=>{
-            layout.enabled = false;
-            this._snapshotData = null;
-            this._toSnapshotDone = false;
-            this.clearOverSquare();
-            this.resetCellData();
-            this.initGridData();
-            this.generateSquares(2);
-        }).start();
-      
-
-       
+    public newGrid () {
+        this._snapshotData = null;
+        this._toSnapshotDone = false;
+        this.clearOverSquare();
+        this.resetCellData();
+        this.initGridData();
+        this.generateSquares(2);
     }
 
-    public moveCell(dir: MoveDirection) {
+    public moveCell (dir: MoveDirection) {
+        if(this.displayPopup) return;
         if (this.isMoving) return;
         const moveInfoList: MoveInfo[] = [];
         if (dir === MoveDirection.RIGHT) {
@@ -129,7 +108,7 @@ export class Grid extends Component {
                         const nearValue = valueStack[valueStack.length - 1];
                         let index = maxIndex;
                         if (cellVal === nearValue) {
-                            cellVal = -1; //确保不会被再次合并
+                            cellVal = -1; 
                             index = ++maxIndex;
                         }
                         if (index !== j) moveInfoList.push({
@@ -158,7 +137,7 @@ export class Grid extends Component {
                         const nearValue = valueStack[valueStack.length - 1];
                         let index = minIndex;
                         if (cellVal === nearValue) {
-                            cellVal = -1; //确保不会被再次合并
+                            cellVal = -1; 
                             index = --minIndex;
                         }
                         if (j !== index) moveInfoList.push({
@@ -187,7 +166,7 @@ export class Grid extends Component {
                         const nearValue = valueStack[valueStack.length - 1];
                         let index = minIndex;
                         if (cellVal === nearValue) {
-                            cellVal = -1; //确保不会被再次合并
+                            cellVal = -1; 
                             index = --minIndex;
                         }
                         if (j !== index) moveInfoList.push({
@@ -216,7 +195,7 @@ export class Grid extends Component {
                         const nearValue = valueStack[valueStack.length - 1];
                         let index = maxIndex;
                         if (cellVal === nearValue) {
-                            cellVal = -1; //确保不会被再次合并
+                            cellVal = -1; 
                             index = ++maxIndex;
                         }
                         if (j !== index) moveInfoList.push({
@@ -244,7 +223,7 @@ export class Grid extends Component {
 
     }
 
-    public toSnapshot() {
+    public toSnapshot () {
         if (this._snapshotData && !this._toSnapshotDone) {
             this.clearOverSquare();
             const grid = this._snapshotData.grid;
@@ -254,17 +233,14 @@ export class Grid extends Component {
                     const cell = row[j];
                     this._grid[i][j] = cell.flag;
                     if (cell.flag) {
-
-                        console.log('%c%s', 'color: #00bf00', "toSnapshot");
                         const cellData = this._cellList[i * this._size + j];
                         const squareNode = PoolManager.instance.getNode(this.squarePrefab, this.node);
                         const square = squareNode.getComponent(Square);
-                        
                         squareNode.setWorldPosition(cellData.square.node.worldPosition);
-                        
                         cellData.overSquare = square;
                         const config = this.getLevelConfig(cell.value);
-                        square.show(cell.value, config.bgColor, config.fontColor);
+                        console.log("back---" + cell.value)
+                        square.show(cell.value, Color.fromHEX(new Color(), "#ffffff"), config.fontColor, config.sprite);
                         square.playAni("generate");
                     }
                 }
@@ -274,7 +250,7 @@ export class Grid extends Component {
         }
     }
 
-    private snapshot() {
+    private snapshot () {
         if (!this._snapshotData) {
             this._snapshotData = { grid: [] }
         }
@@ -299,12 +275,13 @@ export class Grid extends Component {
         }
     }
 
-    private doMoveCell(moveInfoList: MoveInfo[]) {
+    private doMoveCell (moveInfoList: MoveInfo[]) {
         let moveCount = moveInfoList.length;
         moveInfoList.forEach(moveInfo => {
             const toCellData = this._cellList[moveInfo.to.row * this._size + moveInfo.to.col];
             const targetSquare = toCellData.overSquare;
-            const targetPos = toCellData.square.node.worldPosition;
+            var targetPos = toCellData.square.node.worldPosition.clone();
+            targetPos.y = targetPos.y-10;
             const fromCellData = this._cellList[moveInfo.from.row * this._size + moveInfo.from.col];
             const moveSquare = fromCellData.overSquare;
 
@@ -312,8 +289,30 @@ export class Grid extends Component {
                 if (targetSquare && targetSquare.value === moveSquare.value) {
                     const newValue = targetSquare.value + moveSquare.value;
                     const config = this.getLevelConfig(newValue);
-                    moveSquare.show(newValue, config.bgColor, config.fontColor);
+                    moveSquare.show(newValue, Color.fromHEX(new Color(), "#ffffff"), config.fontColor, config.sprite);
+                    console.log("back---" + newValue)
                     moveSquare.playAni('merge');
+                    moveSquare.node.children[1].active = true;
+                    var timeBreakSquare = moveSquare.node.children[1].getComponent(sp.Skeleton).skeletonData.getRuntimeData().findAnimation("Break").duration;
+                    tween(moveSquare).delay(timeBreakSquare).call(()=> {moveSquare.node.children[1].active = false}).start()
+
+                    if(newValue == 8) {
+                        moveSquare.node.children[2].active = true;
+                        this.displayPopup = true;
+                        var timeLightSquare = moveSquare.node.children[2].getComponent(sp.Skeleton).skeletonData.getRuntimeData().findAnimation("Light").duration;
+                        var timeFW = GameManager.Intance.fireworkLeft.getComponent(sp.Skeleton).skeletonData.getRuntimeData().findAnimation("PhaoGiayL").duration;
+                        tween(moveSquare).delay(timeLightSquare).call(()=> {
+                            moveSquare.node.children[2].active = false
+                        }).delay(0).call(()=> {
+                            GameManager.Intance.gamevictoryRoot.active = true; 
+                            GameManager.Intance.fireworkLeft.active = true;
+                            GameManager.Intance.fireworkRight.active = true;
+                        }).delay(timeFW).call(()=> {
+                            GameManager.Intance.fireworkLeft.active = false;
+                            GameManager.Intance.fireworkRight.active = false;
+                        }).start()
+
+                    }
                     PoolManager.instance.putNode(targetSquare.node, this.squarePrefab);
                     this.cellMergedEvent.emit(newValue);
                 }
@@ -336,7 +335,7 @@ export class Grid extends Component {
 
     }
 
-    private initGridData() {
+    private initGridData () {
         this._grid.length = 0;
         for (let i = 0; i < this._size; i++) {
             const row = [];
@@ -345,15 +344,13 @@ export class Grid extends Component {
                 row.push(false);
             }
         }
-
-        console.log('%c%s', 'color: #ff0000', " this._grid.length=>", this._grid.length);
     }
 
-    private checkFilled() {
+    private checkFilled () {
         this.isFilled() && this.filledEvent.emit(true);
     }
 
-    private isFilled() {
+    private isFilled () {
         if (!this.hasEmptyCells()) {
             for (let i = 0; i < this._size; i++) {
                 for (let j = 0; j < this._size; j++) {
@@ -381,46 +378,41 @@ export class Grid extends Component {
         return false;
     }
 
-    private generateSquares(count: number) {
+    private generateSquares (count: number) {
         const emptyCells = this.findEmptyCells();
         const cells: Cell[] = [];
         let total = 0;
-
-        console.log('%c%s', 'color: #fc00b0', "emptyCells=>", emptyCells);
-
-        // console.log('%c%s', 'color: #00a3cc',"total=>",total );
-
         while (emptyCells.length && total < count) {
             const index = math.randomRangeInt(0, emptyCells.length);
             const cell = emptyCells.splice(index, 1)[0];
             cells.push(cell!);
             total++;
         }
-
-        console.log('%c%s', 'color: #ff0000', "cells=>", cells);
         const config = this.getLevelConfig(2);
         cells.forEach(cell => {
-
-            console.log('%c%s', 'color: #e50000', "cell=>", cell);
             const cellData = this._cellList[cell.row * this._size + cell.col];
             //create new square node
             const squareNode = PoolManager.instance.getNode(this.squarePrefab, this.node);
             const square = squareNode.getComponent(Square);
+            squareNode.getComponent(UITransform).setContentSize(250, 250)
+            console.log("squareNode====" + squareNode.getComponent(UITransform).contentSize);
+            console.log("cellData====" , cellData);
+            
             squareNode.setWorldPosition(cellData.square.node.worldPosition);
+            squareNode.position = new Vec3(squareNode.position.x, squareNode.position.y - 10);
             cellData.overSquare = square;
-            squareNode.getComponent(UITransform).setContentSize(this.getSize(), this.getSize());
             this.updateCellState(cell, true);
 
-            square.show(2, config.bgColor, config.fontColor);
+            square.show(2,  Color.fromHEX(new Color(), "#ffffff"), config.fontColor, 0);
             square.playAni("generate");
         });
     }
 
-    private updateCellState(cell: Cell, flag: boolean) {
+    private updateCellState (cell: Cell, flag: boolean) {
         this._grid[cell.row][cell.col] = flag;
     }
 
-    private findEmptyCells() {
+    private findEmptyCells () {
         const res: Cell[] = [];
         for (let i = 0; i < this._grid.length; i++) {
             const row = this._grid[i];
@@ -437,7 +429,7 @@ export class Grid extends Component {
         return res;
     }
 
-    private hasEmptyCells() {
+    private hasEmptyCells () {
         for (let i = 0; i < this._grid.length; i++) {
             const row = this._grid[i];
             for (let j = 0; j < row.length; j++) {
@@ -450,30 +442,9 @@ export class Grid extends Component {
         return false;
     }
 
-    private getLevelConfig(level: number) {
+    private getLevelConfig (level: number) {
         const levelConfig = NumberConfig[String(level)];
         return levelConfig || NumberConfig["2048"];
-    }
-
-    getSize(){
-        var widthLayout = 0;
-        if(this._size == 3) {
-            widthLayout = this.node.getComponent(UITransform).contentSize.width - (13*(this._size - 1));
-        }
-        if(this._size == 4) {
-                widthLayout = this.node.getComponent(UITransform).contentSize.width - (10*(this._size - 1));
-        }
-        if(this._size == 5) {
-                widthLayout = this.node.getComponent(UITransform).contentSize.width - (9*(this._size - 1));
-        }
-        if(this._size == 6) {
-                widthLayout = this.node.getComponent(UITransform).contentSize.width - (8*(this._size - 1));
-        }
-        if(this._size == 8) {
-                widthLayout = this.node.getComponent(UITransform).contentSize.width - (7*(this._size - 1));
-        }
-      
-        return widthLayout/this._size;
     }
 
 }
